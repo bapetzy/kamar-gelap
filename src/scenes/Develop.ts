@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import negativeGlsl from '../gl/shaders/negative.glsl?raw';
 import paperFrag from '../gl/shaders/paper.frag.glsl?raw';
 import type { Stage } from '../gl/Stage';
+import { negativeUniforms } from '../gl/shared';
 import { frames, pad2 } from '../data/frames';
 import { isTouch } from '../lib/motion';
 
@@ -15,7 +17,6 @@ const RIPPLE_GAP_MS = 70;
 
 let trigger: ScrollTrigger | null = null;
 let material: THREE.ShaderMaterial | null = null;
-let texture: THREE.Texture | null = null;
 let paper: HTMLElement | null = null;
 let section: HTMLElement | null = null;
 let stageRef: Stage | null = null;
@@ -27,26 +28,12 @@ function formatTime(seconds: number): string {
 
 function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }): void {
   const ripples = Array.from({ length: RIPPLES }, () => new THREE.Vector3(0, 0, -1));
-  const texSize = new THREE.Vector2(1, 1);
-  const hasTex = { value: 0 };
-  const tex = { value: null as THREE.Texture | null };
-
-  material = stage.addPlane(el, paperFrag, {
-    uTex: tex,
-    uHasTex: hasTex,
-    uTexSize: { value: texSize },
+  material = stage.addPlane(el, negativeGlsl + paperFrag, {
+    ...negativeUniforms(frames[0].src, 0),
     uProgress: progress,
     uRipples: { value: ripples },
   });
   el.classList.add('is-gl');
-
-  // Missing negative never blocks: the shader keeps its procedural stand-in.
-  texture = new THREE.TextureLoader().load(frames[0].src, (t) => {
-    const img = t.image as { width: number; height: number };
-    texSize.set(img.width, img.height);
-    tex.value = t;
-    hasTex.value = 1;
-  }, undefined, () => {});
 
   if (isTouch()) return; // ripple is desktop-only
 
@@ -99,7 +86,6 @@ export function destroy(): void {
   if (paper && onAgitate) paper.removeEventListener('pointermove', onAgitate);
   paper?.classList.remove('is-gl');
   if (material) stageRef?.removePlane(material);
-  texture?.dispose();
   if (section) stageRef?.unwatch(section);
-  trigger = material = texture = paper = section = stageRef = onAgitate = null;
+  trigger = material = paper = section = stageRef = onAgitate = null;
 }

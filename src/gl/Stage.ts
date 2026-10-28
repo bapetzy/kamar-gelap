@@ -4,47 +4,41 @@ import common from './shaders/common.glsl?raw';
 import bgVert from './shaders/background.vert.glsl?raw';
 import bgFrag from './shaders/background.frag.glsl?raw';
 import planeVert from './shaders/plane.vert.glsl?raw';
-import { getMode, onMode, type Mode } from '../lib/mode';
+import { createShared, disposeTextures, syncShared, type Shared, type U } from './shared';
+import { getMode, onMode } from '../lib/mode';
 import { isTouch, lerpFactor } from '../lib/motion';
 
 /*
   One fixed canvas behind the DOM. It draws the room (safelight glow + grain) and any
-  plane registered with addPlane(), each one glued to a DOM element's rect.
-  Single render loop on gsap.ticker; it idles when the tab is hidden or when no
+  plane registered with addPlane(), each one glued to a DOM element.
+  Single render loop on gsap.ticker (added by start(), after the scenes, so scene
+  updates land before the frame is drawn). It idles when the tab is hidden or when no
   watched WebGL section is on screen.
 */
 
-type U<T> = { value: T };
-
-export interface Shared {
-  uTime: U<number>;
-  uDpr: U<number>;
-  uDay: U<number>;
-  uGrain: U<number>;
-  uBg: U<THREE.Vector3>;
-  uSafelight: U<THREE.Vector3>;
-  uText: U<THREE.Vector3>;
+/** Plane placement in client px: center, size, clockwise rotation (radians, like CSS). */
+export interface PlaneLayout {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rot: number;
 }
+export type LayoutFn = (out: PlaneLayout) => void;
 
 interface Plane {
   el: HTMLElement;
   mesh: THREE.Mesh;
   size: U<THREE.Vector2>;
+  layout?: LayoutFn;
 }
 
 const GLOW_PEAK = 0.28; // keeps --text over the brightest glow at ~4.6:1
 const GLOW_LERP = 0.08;
 const GRAIN = 0.09;
 
-function readToken(name: string): THREE.Vector3 | null {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  if (!/^#[0-9a-f]{6}$/i.test(v)) return null;
-  const n = parseInt(v.slice(1), 16);
-  return new THREE.Vector3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
-}
-
 export class Stage {
-  readonly shared: Shared;
+  readonly shared: Shared = createShared(GRAIN);
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
@@ -56,6 +50,7 @@ export class Stage {
   private readonly inView = new Map<Element, boolean>();
   private readonly io: IntersectionObserver;
   private readonly offMode: () => void;
+  private readonly box: PlaneLayout = { x: 0, y: 0, w: 0, h: 0, rot: 0 };
   private w = 0;
   private h = 0;
   private dpr = 1;
@@ -77,16 +72,6 @@ export class Stage {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     document.body.prepend(canvas);
 
-    this.shared = {
-      uTime: { value: 0 },
-      uDpr: { value: 1 },
-      uDay: { value: 0 },
-      uGrain: { value: GRAIN },
-      uBg: { value: new THREE.Vector3() },
-      uSafelight: { value: new THREE.Vector3() },
-      uText: { value: new THREE.Vector3() },
-    };
-
     this.bg = new THREE.Mesh(
       new THREE.PlaneGeometry(2, 2),
       new THREE.ShaderMaterial({
@@ -106,8 +91,8 @@ export class Stage {
     this.bg.renderOrder = -1;
     this.scene.add(this.bg);
 
-    this.applyMode(getMode());
-    this.offMode = onMode((m) => this.applyMode(m));
+    syncShared(this.shared, getMode());
+    this.offMode = onMode((m) => syncShared(this.shared, m));
 
     this.resize();
     this.glow.set(this.w * 0.62, this.h * 0.42);
@@ -120,6 +105,10 @@ export class Stage {
 
     window.addEventListener('resize', this.resize);
     document.addEventListener('visibilitychange', this.updateActive);
+  }
+
+  /** Begin drawing. Call after scenes have registered their own ticker callbacks. */
+  start(): void {
     gsap.ticker.add(this.tick);
   }
 
@@ -140,8 +129,16 @@ export class Stage {
     this.glowTarget.set(x, y);
   }
 
-  /** A plane glued to `el`. Shared uniforms (time, mode colors, grain) are injected. */
-  addPlane(el: HTMLElement, fragmentShader: string, uniforms: Record<string, U<unknown>>): THREE.ShaderMaterial {
+  /**
+   * A plane glued to `el` (its bounding rect), or placed by `layout` when the element
+   * is rotated. Shared uniforms (time, mode colors, grain) are injected.
+   */
+  addPlane(
+    el: HTMLElement,
+    fragmentShader: string,
+    uniforms: Record<string, U<unknown>>,
+    layout?: LayoutFn,
+  ): THREE.ShaderMaterial {
     const size = { value: new THREE.Vector2(1, 1) };
     const material = new THREE.ShaderMaterial({
       vertexShader: planeVert,
@@ -152,7 +149,7 @@ export class Stage {
     });
     const mesh = new THREE.Mesh(this.quad, material);
     this.scene.add(mesh);
-    this.planes.add({ el, mesh, size });
+    this.planes.add({ el, mesh, size, layout });
     return material;
   }
 
@@ -176,17 +173,9 @@ export class Stage {
     this.bg.geometry.dispose();
     this.bg.material.dispose();
     this.quad.dispose();
+    disposeTextures();
     this.renderer.dispose();
     this.renderer.domElement.remove();
-  }
-
-  private applyMode(mode: Mode): void {
-    const s = this.shared;
-    for (const [u, name] of [[s.uBg, '--bg'], [s.uSafelight, '--safelight'], [s.uText, '--text']] as const) {
-      const c = readToken(name);
-      if (c) u.value.copy(c);
-    }
-    s.uDay.value = mode === 'day' ? 1 : 0;
   }
 
   private updateActive = (): void => {
@@ -208,14 +197,22 @@ export class Stage {
   };
 
   private syncPlanes(): void {
+    const b = this.box;
     for (const p of this.planes) {
-      const r = p.el.getBoundingClientRect();
-      const visible = r.bottom > 0 && r.top < this.h && r.width > 0;
+      if (p.layout) {
+        p.layout(b);
+      } else {
+        const r = p.el.getBoundingClientRect();
+        Object.assign(b, { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, rot: 0 });
+      }
+      const reach = Math.max(b.w, b.h); // generous cull radius, covers rotation
+      const visible = b.w > 0 && b.y + reach > 0 && b.y - reach < this.h && b.x + reach > 0 && b.x - reach < this.w;
       p.mesh.visible = visible;
       if (!visible) continue;
-      p.mesh.scale.set(r.width, r.height, 1);
-      p.mesh.position.set(r.left + r.width / 2 - this.w / 2, this.h / 2 - (r.top + r.height / 2), 0);
-      p.size.value.set(r.width, r.height);
+      p.mesh.scale.set(b.w, b.h, 1);
+      p.mesh.position.set(b.x - this.w / 2, this.h / 2 - b.y, 0);
+      p.mesh.rotation.z = -b.rot;
+      p.size.value.set(b.w, b.h);
     }
   }
 

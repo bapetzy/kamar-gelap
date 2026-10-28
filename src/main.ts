@@ -3,6 +3,7 @@ import '@fontsource-variable/bodoni-moda/opsz-italic.css';
 import '@fontsource/ibm-plex-mono/latin-400.css';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/strip.css';
 import './styles/acts.css';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,6 +13,8 @@ import { Stage } from './gl/Stage';
 import { getMode, onMode, setMode } from './lib/mode';
 import * as Safelight from './scenes/Safelight';
 import * as Develop from './scenes/Develop';
+import * as Strip from './scenes/Strip';
+import * as LightsOn from './scenes/LightsOn';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -52,7 +55,7 @@ async function boot(): Promise<void> {
   markMissingFrames();
   if (import.meta.env.DEV) mountDevToggle();
 
-  startScroll();
+  const lenis = startScroll();
   const stage = Stage.create();
   if (stage) document.documentElement.classList.add('has-gl');
 
@@ -60,6 +63,9 @@ async function boot(): Promise<void> {
   await document.fonts.ready;
   Safelight.init(stage);
   Develop.init(stage);
+  Strip.init(stage, lenis);
+  LightsOn.init(stage);
+  stage?.start(); // after scenes, so their ticker work lands before the frame is drawn
   ScrollTrigger.refresh();
 }
 

@@ -46,3 +46,13 @@ vec3 grain(vec2 fragCoord) {
   vec3 tint = mix(uSafelight, vec3(0.55), uDay);
   return tint * g * uGrain;
 }
+
+// Print tone (0 = black, 1 = paper white) to the room's colors.
+// Safelight: paper-white reads bright red, blacks sink into the room.
+// Lights on: true black-and-white print in the daylight tokens.
+vec3 toneColor(float tone) {
+  vec3 dark = mix(uBg, uSafelight, smoothstep(0.0, 0.65, tone));
+  dark = mix(dark, uText, smoothstep(0.65, 1.0, tone));
+  vec3 day = mix(uText, uBg, tone);
+  return mix(dark, day, uDay);
+}
