@@ -1,0 +1,68 @@
+/*
+  Design tokens. These are the only colors the site may use.
+  Contrast (WCAG 2.x, measured):
+    dark  --text   #EE5A4C on #0A0505 = 5.98:1
+    dark  --accent #C8281C on #0A0505 = 3.64:1 (focus ring / non-text only)
+    day   --text   #121010 on #F1EDE4 = 16.23:1
+    day   --accent #C8281C on #F1EDE4 = 4.76:1
+*/
+
+:root,
+:root[data-mode='dark'] {
+  --bg: #0a0505;
+  --safelight: #c8281c;
+  --safelight-dim: #3a0b07;
+  --text: #ee5a4c;
+  --accent: var(--safelight);
+
+  /* semantic aliases, built only from the tokens above */
+  --line: var(--safelight-dim);
+  --paper: var(--safelight-dim);
+
+  color-scheme: dark;
+}
+
+:root[data-mode='day'] {
+  --bg: #f1ede4;
+  --text: #121010;
+  --accent: #c8281c;
+
+  --line: var(--text);
+  --paper: transparent;
+
+  color-scheme: light;
+}
+
+:root {
+  /* type */
+  --font-display: 'Bodoni Moda Variable', 'Bodoni Moda', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --fs-display: clamp(3.5rem, 12vw, 11rem);
+  --fs-body: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --fs-label: 0.75rem;
+  --lh-display: 0.9;
+  --tracking-label: 0.08em;
+
+  /* grid */
+  --cols: 12;
+  --gutter: 24px;
+  --margin: clamp(24px, 4vw, 64px);
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --space-4: 4rem;
+  --space-5: 8rem;
+
+  /* motion (consumed by src/lib/motion.ts in later phases) */
+  --dur-1: 0.4s;
+  --dur-2: 0.8s;
+  --dur-3: 1.4s;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --gutter: 16px;
+    --margin: 16px;
+    --fs-label: 0.6875rem;
+  }
+}
