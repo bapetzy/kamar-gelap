@@ -19,7 +19,7 @@ body {
   font-size: var(--fs-body);
   font-optical-sizing: auto;
   line-height: 1.5;
-  background: var(--bg);
+  /* no body background: the GL canvas sits between <html> and the content */
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -140,6 +140,46 @@ button {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   letter-spacing: var(--tracking-label);
+}
+
+/* when the GL stage draws the paper, the DOM frame only reserves its rect */
+.frame.is-gl {
+  background: transparent;
+  border-color: transparent;
+}
+
+.frame.is-gl img {
+  visibility: hidden;
+}
+
+.frame.is-gl::after {
+  content: none;
+}
+
+/* ---------- GL stage: fixed, behind content ---------- */
+.stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* title waits for its line reveal; failsafe shows it if JS never arrives */
+.js [data-reveal] {
+  visibility: hidden;
+  animation: reveal-failsafe 0s 3s forwards;
+}
+
+@keyframes reveal-failsafe {
+  to { visibility: visible; }
+}
+
+/* line masks: room for Bodoni ascenders/descenders at lh .9 */
+.line-mask {
+  padding-block: 0.06em 0.14em;
+  margin-block: -0.06em -0.14em;
 }
 
 /* ---------- dev-only mode toggle ---------- */

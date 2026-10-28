@@ -25,9 +25,12 @@
 }
 
 /* ---------- II · develop ---------- */
+/* pinned: everything must fit one viewport; --develop-chrome = height of non-paper parts */
 .act--develop {
-  min-height: 100svh;
+  --develop-chrome: 21rem;
+  height: 100svh;
   row-gap: var(--space-3);
+  align-content: start;
 }
 
 .develop__text {
@@ -55,7 +58,7 @@
 }
 
 .tray__bath .frame {
-  width: min(100%, calc(62svh * 4 / 5));
+  width: min(100%, calc((100svh - var(--develop-chrome)) * 4 / 5));
 }
 
 .tray figcaption {
@@ -239,6 +242,9 @@
     margin-block-start: var(--space-2);
   }
 
+  .act--develop { --develop-chrome: 27rem; row-gap: var(--space-2); }
+  .develop__text { row-gap: var(--space-2); padding-block-start: var(--space-2); }
+  .tray { padding-block-start: 0; }
   .lights__text { grid-row: 2; }
   .cord { grid-column: 1 / -1; grid-row: 1; margin-block-start: 0; }
   .cord__line { height: 36svh; }

@@ -4,7 +4,16 @@ import '@fontsource/ibm-plex-mono/latin-400.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/acts.css';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import Lenis from 'lenis';
+import { Stage } from './gl/Stage';
 import { getMode, onMode, setMode } from './lib/mode';
+import * as Safelight from './scenes/Safelight';
+import * as Develop from './scenes/Develop';
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 // A missing negative must never block the page: show an empty sheet of paper instead.
 function markMissingFrames(): void {
@@ -13,6 +22,15 @@ function markMissingFrames(): void {
     if (img.complete && img.naturalWidth === 0) markMissing();
     else img.addEventListener('error', markMissing, { once: true });
   });
+}
+
+// One clock for everything: Lenis, ScrollTrigger and the GL stage all run on gsap.ticker.
+function startScroll(): Lenis {
+  const lenis = new Lenis({ autoRaf: false });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+  return lenis;
 }
 
 // Dev only: flip between safelight and daylight without walking through the acts.
@@ -30,5 +48,19 @@ function mountDevToggle(): void {
   document.body.append(btn);
 }
 
-markMissingFrames();
-if (import.meta.env.DEV) mountDevToggle();
+async function boot(): Promise<void> {
+  markMissingFrames();
+  if (import.meta.env.DEV) mountDevToggle();
+
+  startScroll();
+  const stage = Stage.create();
+  if (stage) document.documentElement.classList.add('has-gl');
+
+  // Split lines and measure pins only once the real fonts are in.
+  await document.fonts.ready;
+  Safelight.init(stage);
+  Develop.init(stage);
+  ScrollTrigger.refresh();
+}
+
+boot();
