@@ -1,0 +1,157 @@
+/* Layers above the acts: preloader, archive detail. Plus fallbacks (no WebGL, reduced motion). */
+
+/* ---------- 0 · preloader ---------- */
+.preloader {
+  display: none;
+}
+
+.js .preloader {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--bg);
+  /* failsafe: if the boot script never finishes, the room still opens */
+  animation: preloader-failsafe 0s 8s forwards;
+}
+
+@keyframes preloader-failsafe {
+  to { visibility: hidden; }
+}
+
+/* Same falloff as the GL glow (exp(-r²·2.6)); Preloader.ts holds it at 0.28 opacity = GL peak mix. */
+.preloader__light {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    circle max(50vw, 50vh) at 62% 42%,
+    var(--safelight) 0%,
+    color-mix(in srgb, var(--safelight) 85%, var(--bg)) 25%,
+    color-mix(in srgb, var(--safelight) 52%, var(--bg)) 50%,
+    color-mix(in srgb, var(--safelight) 23%, var(--bg)) 75%,
+    var(--bg) 100%
+  );
+}
+
+/* ---------- V · detail ---------- */
+.detail {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+}
+
+.detail[hidden] {
+  display: none;
+}
+
+.detail__backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+}
+
+.detail__inner {
+  position: relative;
+  min-height: 100%;
+  align-items: center;
+  padding-block: var(--space-3);
+}
+
+.detail__media {
+  grid-column: 1 / 8;
+  display: grid;
+  place-items: center;
+}
+
+.detail__frame {
+  --ar: 0.8;
+  aspect-ratio: var(--ar);
+  width: min(100%, calc((100svh - 4rem) * var(--ar)));
+}
+
+.detail img,
+.archive__item img {
+  filter: grayscale(1);
+}
+
+.detail__meta {
+  grid-column: 9 / -1;
+  display: grid;
+  row-gap: var(--space-3);
+  align-content: center;
+}
+
+/* smaller than --fs-display: titles must fit a 4-column meta block */
+.detail__title {
+  font-size: clamp(2.5rem, 5vw, 5.5rem);
+  line-height: var(--lh-display);
+  font-weight: 400;
+  font-variation-settings: 'opsz' 96;
+}
+
+.detail__specs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+}
+
+.detail__specs div {
+  display: contents;
+}
+
+.detail__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--line);
+}
+
+.detail__nav button {
+  min-height: 44px;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+
+.has-modal {
+  overflow: hidden;
+}
+
+/* ---------- no WebGL: plain prints, toned like the room ---------- */
+html:not(.has-gl)[data-mode='dark'] .frame img {
+  filter: grayscale(1);
+}
+
+/* multiply turns paper-white into safelight red and keeps blacks black */
+html:not(.has-gl)[data-mode='dark'] .frame:not(.is-missing)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--safelight);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* ---------- reduced motion: strip is a plain horizontal shelf ---------- */
+.reduced .strip__viewport {
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .detail__inner {
+    align-content: start;
+    row-gap: var(--space-3);
+  }
+
+  .detail__media,
+  .detail__meta {
+    grid-column: 1 / -1;
+  }
+
+  .detail__frame {
+    width: min(100%, calc(55svh * var(--ar)));
+  }
+}

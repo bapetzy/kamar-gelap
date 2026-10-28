@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type Lenis from 'lenis';
 import negativeGlsl from '../gl/shaders/negative.glsl?raw';
 import printFrag from '../gl/shaders/print.frag.glsl?raw';
@@ -39,6 +40,7 @@ let stageRef: Stage | null = null;
 let trackRect = new DOMRect();
 let lastX = Number.NaN;
 let wireSpeed = 0;
+let still = false; // reduced motion: no pin, no swing
 const cleanups: Array<() => void> = [];
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -84,6 +86,7 @@ function step(_time: number, deltaMs: number): void {
   const dt = Math.min(deltaMs / 1000, 1 / 30);
   if (dt <= 0) return;
 
+  if (still) return;
   const x = trackRect.left;
   const raw = Number.isNaN(lastX) ? 0 : (x - lastX) / dt;
   lastX = x;
@@ -108,21 +111,24 @@ function listen(el: HTMLElement, type: string, fn: EventListener): void {
 }
 
 /** Keyboard users: tabbing to a print scrolls the pinned strip until it is centered. */
-function revealOnFocus(p: Print, lenis: Lenis): void {
+function revealOnFocus(p: Print, lenis: Lenis | null): void {
   const st = tween?.scrollTrigger;
   const d = distance();
   if (!st || !viewport || d === 0) return;
   const visible = viewport.clientWidth - 2 * gutter();
   const want = clamp(p.pivot.x - visible / 2, 0, d);
-  lenis.scrollTo(st.start + (want / d) * (st.end - st.start), { duration: DUR.mid });
+  const y = st.start + (want / d) * (st.end - st.start);
+  if (lenis) lenis.scrollTo(y, { duration: DUR.mid });
+  else window.scrollTo(0, y);
 }
 
-export function init(stage: Stage | null, lenis: Lenis): void {
+export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean): void {
   section = document.querySelector<HTMLElement>('#strip');
   track = section?.querySelector<HTMLElement>('.strip__track') ?? null;
   viewport = section?.querySelector<HTMLElement>('.strip__viewport') ?? null;
   if (!section || !track || !viewport) return;
   stageRef = stage;
+  still = reduced;
 
   prints = [...track.querySelectorAll<HTMLElement>('.print figure')].map((fig, i) => ({
     fig,
@@ -136,13 +142,15 @@ export function init(stage: Stage | null, lenis: Lenis): void {
     develop: { value: 0 },
   }));
   measure();
+  ScrollTrigger.addEventListener('refresh', measure); // any resize, pinned or not
+  cleanups.push(() => ScrollTrigger.removeEventListener('refresh', measure));
 
   prints.forEach((p, i) => {
     const toward = (value: number, duration: number) => () =>
       gsap.to(p.develop, { value, duration, ease: EASE.reveal, overwrite: true });
-    for (const t of ['pointerenter', 'focus']) listen(p.fig, t, toward(1, DUR.mid));
-    for (const t of ['pointerleave', 'blur']) listen(p.fig, t, toward(0, DUR.long));
-    listen(p.fig, 'focus', () => revealOnFocus(p, lenis));
+    for (const t of ['pointerenter', 'focus']) listen(p.fig, t, toward(1, reduced ? 0 : DUR.mid));
+    for (const t of ['pointerleave', 'blur']) listen(p.fig, t, toward(0, reduced ? 0 : DUR.long));
+    if (!reduced) listen(p.fig, 'focus', () => revealOnFocus(p, lenis));
 
     if (!stage) return;
     p.material = stage.addPlane(
@@ -153,6 +161,10 @@ export function init(stage: Stage | null, lenis: Lenis): void {
     );
     p.frame.classList.add('is-gl');
   });
+
+  stage?.watch(section);
+  gsap.ticker.add(step);
+  if (reduced) return; // native horizontal scroll, see layers.css
 
   section.classList.add('is-pinned');
   tween = gsap.to(track, {
@@ -165,12 +177,8 @@ export function init(stage: Stage | null, lenis: Lenis): void {
       pin: true,
       scrub: true,
       invalidateOnRefresh: true,
-      onRefresh: measure,
     },
   });
-
-  stage?.watch(section);
-  gsap.ticker.add(step);
 }
 
 export function destroy(): void {
@@ -193,4 +201,5 @@ export function destroy(): void {
   track = viewport = section = stageRef = null;
   lastX = Number.NaN;
   wireSpeed = 0;
+  still = false;
 }

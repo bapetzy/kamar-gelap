@@ -26,7 +26,7 @@ function formatTime(seconds: number): string {
   return `${pad2(Math.floor(seconds / 60))}:${pad2(seconds % 60)}`;
 }
 
-function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }): void {
+function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }, agitate: boolean): void {
   const ripples = Array.from({ length: RIPPLES }, () => new THREE.Vector3(0, 0, -1));
   material = stage.addPlane(el, negativeGlsl + paperFrag, {
     ...negativeUniforms(frames[0].src, 0),
@@ -35,7 +35,7 @@ function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }):
   });
   el.classList.add('is-gl');
 
-  if (isTouch()) return; // ripple is desktop-only
+  if (!agitate || isTouch()) return; // ripple: desktop only, never with reduced motion
 
   let next = 0;
   let last = 0;
@@ -51,17 +51,22 @@ function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }):
   el.addEventListener('pointermove', onAgitate);
 }
 
-export function init(stage: Stage | null): void {
+export function init(stage: Stage | null, reduced: boolean): void {
   section = document.querySelector<HTMLElement>('#develop');
   paper = section?.querySelector<HTMLElement>('.tray .frame') ?? null;
   const timer = section?.querySelector<HTMLElement>('[data-timer]');
   if (!section || !paper || !timer) return;
 
-  const progress = { value: 0 };
+  // Reduced motion: no pin, no scrub; the print is shown fully developed.
+  const progress = { value: reduced ? 1 : 0 };
   stageRef = stage;
   if (stage) {
     stage.watch(section);
-    mountPaper(stage, paper, progress);
+    mountPaper(stage, paper, progress, !reduced);
+  }
+  if (reduced) {
+    timer.textContent = formatTime(DEV_SECONDS);
+    return;
   }
 
   let shown = -1;

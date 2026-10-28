@@ -13,7 +13,9 @@ export const DUR = {
 
 const mq = (q: string) => window.matchMedia(q).matches;
 
-export const prefersReducedMotion = () => mq('(prefers-reduced-motion: reduce)');
+// Dev only: `?reduced` forces the reduced-motion path for testing.
+const forceReduced = import.meta.env.DEV && new URLSearchParams(location.search).has('reduced');
+export const prefersReducedMotion = () => forceReduced || mq('(prefers-reduced-motion: reduce)');
 
 /** Touch-first device: no hover, coarse pointer. Ripple is off here, DPR capped at 1. */
 export const isTouch = () => mq('(hover: none), (pointer: coarse)');

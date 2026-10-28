@@ -55,17 +55,19 @@ export class Stage {
   private h = 0;
   private dpr = 1;
   private active = false;
+  private readonly frozen: boolean; // reduced motion: grain holds still
 
-  static create(): Stage | null {
+  static create(reducedMotion = false): Stage | null {
     try {
-      return new Stage();
+      return new Stage(reducedMotion);
     } catch (err) {
       console.warn('[stage] WebGL unavailable, keeping static prints.', err);
       return null;
     }
   }
 
-  private constructor() {
+  private constructor(reducedMotion: boolean) {
+    this.frozen = reducedMotion;
     const canvas = document.createElement('canvas');
     canvas.className = 'stage';
     canvas.setAttribute('aria-hidden', 'true');
@@ -218,7 +220,7 @@ export class Stage {
 
   private tick = (time: number, deltaMs: number): void => {
     if (!this.active) return;
-    this.shared.uTime.value = time;
+    this.shared.uTime.value = this.frozen ? 0 : time;
     this.glow.lerp(this.glowTarget, lerpFactor(GLOW_LERP, deltaMs / 1000));
     (this.bg.material.uniforms.uPointer.value as THREE.Vector2).set(
       this.glow.x * this.dpr,

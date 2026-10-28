@@ -10,6 +10,9 @@
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
+    <!-- 0 · PRELOADER: the safelight tube strikes while the negatives load -->
+    <div class="preloader" aria-hidden="true"><div class="preloader__light"></div></div>
+
     <main>
       <!-- I · SAFELIGHT -->
       <section id="safelight" class="act act--safelight grid" aria-labelledby="safelight-title">
@@ -97,12 +100,12 @@
           <p class="copy">Lampu menyala, inilah gulungan pertama. Hitam, putih, dan semua abu-abu di antaranya.</p>
         </div>
         <ol class="archive__grid">
-          <li><button class="archive__item" type="button" data-frame="1"><span class="frame"><img src="/frames/01.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="1" /></span><span class="label">01 — Jendela Pagi</span></button></li>
-          <li><button class="archive__item" type="button" data-frame="2"><span class="frame"><img src="/frames/02.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="2" /></span><span class="label">02 — Pasar Subuh</span></button></li>
-          <li><button class="archive__item" type="button" data-frame="3"><span class="frame"><img src="/frames/03.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="3" /></span><span class="label">03 — Tangga Rumah</span></button></li>
-          <li><button class="archive__item" type="button" data-frame="4"><span class="frame"><img src="/frames/04.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="4" /></span><span class="label">04 — Hujan di Kaca</span></button></li>
-          <li><button class="archive__item" type="button" data-frame="5"><span class="frame"><img src="/frames/05.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="5" /></span><span class="label">05 — Tangan Ibu</span></button></li>
-          <li><button class="archive__item" type="button" data-frame="6"><span class="frame"><img src="/frames/06.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="6" /></span><span class="label">06 — Pelabuhan Sore</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="1"><span class="frame"><img src="/frames/01.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="1" /></span><span class="label">01 — Jendela Pagi</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="2"><span class="frame"><img src="/frames/02.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="2" /></span><span class="label">02 — Pasar Subuh</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="3"><span class="frame"><img src="/frames/03.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="3" /></span><span class="label">03 — Tangga Rumah</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="4"><span class="frame"><img src="/frames/04.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="4" /></span><span class="label">04 — Hujan di Kaca</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="5"><span class="frame"><img src="/frames/05.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="5" /></span><span class="label">05 — Tangan Ibu</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="6"><span class="frame"><img src="/frames/06.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="6" /></span><span class="label">06 — Pelabuhan Sore</span></button></li>
         </ol>
         <footer class="footer label">
           <span>Bryan Paulo — Kamar Gelap, 2026</span>
@@ -111,5 +114,30 @@
         </footer>
       </section>
     </main>
+
+    <!-- V · ARCHIVE DETAIL: one print held up to the light -->
+    <div class="detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detail-title" hidden>
+      <div class="detail__backdrop"></div>
+      <div class="detail__inner grid">
+        <div class="detail__media">
+          <div class="frame detail__frame"><img alt="" decoding="async" /></div>
+        </div>
+        <div class="detail__meta">
+          <p class="label" data-detail="no">Frame 01 / 06</p>
+          <h2 id="detail-title" class="detail__title"><em data-detail="title">Jendela Pagi</em></h2>
+          <dl class="label detail__specs">
+            <div><dt>Aperture</dt><dd data-detail="aperture">f/8</dd></div>
+            <div><dt>Exposure</dt><dd data-detail="seconds">12s</dd></div>
+            <div><dt>Film</dt><dd>ISO 400</dd></div>
+            <div><dt>Photo</dt><dd data-detail="credit">Bryan Paulo</dd></div>
+          </dl>
+          <div class="detail__nav label">
+            <button type="button" data-detail="prev">← Prev frame</button>
+            <button type="button" data-detail="next">Next frame →</button>
+            <button type="button" data-detail="close">Close · Esc</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

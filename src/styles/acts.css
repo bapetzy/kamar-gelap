@@ -113,9 +113,6 @@
   width: 100%;
 }
 
-.archive__item img {
-  filter: grayscale(1);
-}
 
 .archive__item .label {
   display: block;

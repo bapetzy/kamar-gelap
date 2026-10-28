@@ -16,14 +16,20 @@ const onTouch = (e: TouchEvent) => {
   if (t) stageRef?.setGlowTarget(t.clientX, t.clientY);
 };
 
-export function init(stage: Stage | null): void {
+export function init(stage: Stage | null, reduced: boolean): void {
   section = document.querySelector<HTMLElement>('#safelight');
   const title = section?.querySelector<HTMLElement>('[data-reveal]');
   if (!section || !title) return;
 
   stageRef = stage;
+  stage?.watch(section);
+  if (reduced) {
+    // Reduced motion: the lamp stays put and the title is simply there.
+    gsap.set(title, { visibility: 'visible' });
+    return;
+  }
+
   if (stage) {
-    stage.watch(section);
     window.addEventListener('pointermove', onPointer, { passive: true });
     window.addEventListener('touchstart', onTouch, { passive: true });
     window.addEventListener('touchmove', onTouch, { passive: true });
@@ -42,7 +48,7 @@ export function init(stage: Stage | null): void {
         duration: DUR.long,
         ease: EASE.reveal,
         stagger: 0.12,
-        delay: 0.2,
+        delay: 0.35, // lands while the preloader cover lifts
       });
     },
   });

@@ -22,6 +22,7 @@ const FLICKER: Array<[number, Mode]> = [
 ];
 
 let lit = false;
+let instant = false; // reduced motion: no flicker, no tug
 let cord: HTMLButtonElement | null = null;
 let section: HTMLElement | null = null;
 let stageRef: Stage | null = null;
@@ -34,6 +35,7 @@ function lightsOn(): void {
   lit = true;
   cord?.setAttribute('aria-label', 'Lampu sudah menyala');
   cord?.setAttribute('data-lit', '');
+  if (instant) return setMode('day');
   flicker = gsap.timeline({ delay: STARTER_DELAY });
   FLICKER.forEach(([t, mode]) => flicker!.call(setMode, [mode], t));
 }
@@ -43,7 +45,8 @@ function on<K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (
   cleanups.push(() => el.removeEventListener(type, fn));
 }
 
-export function init(stage: Stage | null): void {
+export function init(stage: Stage | null, reduced: boolean): void {
+  instant = reduced;
   section = document.querySelector<HTMLElement>('#lights');
   cord = section?.querySelector<HTMLButtonElement>('[data-cord]') ?? null;
   const line = cord?.querySelector<HTMLElement>('.cord__line');
@@ -100,6 +103,7 @@ export function init(stage: Stage | null): void {
       return;
     }
     if (lit) return;
+    if (instant) return lightsOn();
     gsap.to(pull, {
       y: THRESHOLD + 10,
       duration: DUR.short,
@@ -121,4 +125,5 @@ export function destroy(): void {
   auto = flicker = null;
   cord = section = stageRef = null;
   lit = false;
+  instant = false;
 }
