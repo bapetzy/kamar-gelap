@@ -67,7 +67,9 @@
   min-height: 100svh;
 }
 
-.strip__head {
+/* shared head row for III and V: big word left, copy right */
+.strip__head,
+.archive__head {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
@@ -75,11 +77,13 @@
   padding-block: var(--space-3);
 }
 
-.strip__head h2 {
+.strip__head h2,
+.archive__head h2 {
   grid-column: 1 / 7;
 }
 
-.strip__head .copy {
+.strip__head .copy,
+.archive__head .copy {
   grid-column: 8 / -1;
 }
 
@@ -172,19 +176,7 @@
 
 /* ---------- V · archive ---------- */
 .archive__head {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: end;
-  padding-block: var(--space-3) var(--space-5);
-}
-
-.archive__head h2 {
-  grid-column: 1 / 7;
-}
-
-.archive__head .copy {
-  grid-column: 8 / -1;
+  padding-block-end: var(--space-5);
 }
 
 .archive__grid {
