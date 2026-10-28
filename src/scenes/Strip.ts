@@ -98,10 +98,15 @@ function step(_time: number, deltaMs: number): void {
     const accel = -K * p.k * (p.theta - target) - DAMPING * p.omega;
     p.omega += accel * dt;
     p.theta = clamp(p.theta + p.omega * dt, -MAX_DEG, MAX_DEG);
-    if (Math.abs(p.theta - p.shown) > 0.005) {
-      p.shown = p.theta;
-      p.fig.style.transform = `rotate(${p.theta.toFixed(3)}deg)`;
-    }
+  }
+}
+
+// DOM writes wait until the Stage has read layout this frame: no forced reflow.
+function write(): void {
+  for (const p of prints) {
+    if (Math.abs(p.theta - p.shown) <= 0.005) continue;
+    p.shown = p.theta;
+    p.fig.style.transform = `rotate(${p.theta.toFixed(3)}deg)`;
   }
 }
 
@@ -164,6 +169,8 @@ export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean)
 
   stage?.watch(section);
   gsap.ticker.add(step);
+  if (stage) cleanups.push(stage.afterRender(write));
+  else gsap.ticker.add(write);
   if (reduced) return; // native horizontal scroll, see layers.css
 
   section.classList.add('is-pinned');
@@ -183,6 +190,7 @@ export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean)
 
 export function destroy(): void {
   gsap.ticker.remove(step);
+  gsap.ticker.remove(write);
   tween?.scrollTrigger?.kill(true);
   tween?.kill();
   cleanups.splice(0).forEach((fn) => fn());

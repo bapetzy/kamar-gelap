@@ -50,6 +50,7 @@ export class Stage {
   private readonly inView = new Map<Element, boolean>();
   private readonly io: IntersectionObserver;
   private readonly offMode: () => void;
+  private readonly afterRenders = new Set<() => void>();
   private readonly box: PlaneLayout = { x: 0, y: 0, w: 0, h: 0, rot: 0 };
   private w = 0;
   private h = 0;
@@ -112,6 +113,12 @@ export class Stage {
   /** Begin drawing. Call after scenes have registered their own ticker callbacks. */
   start(): void {
     gsap.ticker.add(this.tick);
+  }
+
+  /** DOM writes that must wait until this frame's layout reads are done (avoids forced reflow). */
+  afterRender(fn: () => void): () => void {
+    this.afterRenders.add(fn);
+    return () => this.afterRenders.delete(fn);
   }
 
   /** Register a section that needs the GL loop while it is on screen. */
@@ -219,7 +226,10 @@ export class Stage {
   }
 
   private tick = (time: number, deltaMs: number): void => {
-    if (!this.active) return;
+    if (!this.active) {
+      this.afterRenders.forEach((fn) => fn());
+      return;
+    }
     this.shared.uTime.value = this.frozen ? 0 : time;
     this.glow.lerp(this.glowTarget, lerpFactor(GLOW_LERP, deltaMs / 1000));
     (this.bg.material.uniforms.uPointer.value as THREE.Vector2).set(
@@ -228,5 +238,6 @@ export class Stage {
     );
     this.syncPlanes();
     this.renderer.render(this.scene, this.camera);
+    this.afterRenders.forEach((fn) => fn());
   };
 }

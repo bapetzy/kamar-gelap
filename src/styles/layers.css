@@ -19,6 +19,13 @@
   to { visibility: hidden; }
 }
 
+/* Content stays unrendered under the cover until fonts are in, so the font swap
+   can't shift anything visible (CLS 0). Failsafe keyframes live in base.css. */
+.js:not(.is-ready) main {
+  visibility: hidden;
+  animation: reveal-failsafe 0s 5s forwards;
+}
+
 /* Same falloff as the GL glow (exp(-r²·2.6)); Preloader.ts holds it at 0.28 opacity = GL peak mix. */
 .preloader__light {
   position: absolute;

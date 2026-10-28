@@ -33,7 +33,7 @@ const cleanups: Array<() => void> = [];
 function lightsOn(): void {
   if (lit) return;
   lit = true;
-  cord?.setAttribute('aria-label', 'Lampu sudah menyala');
+  cord?.setAttribute('aria-label', 'Pull — lampu sudah menyala');
   cord?.setAttribute('data-lit', '');
   if (instant) return setMode('day');
   flicker = gsap.timeline({ delay: STARTER_DELAY });

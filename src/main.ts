@@ -80,6 +80,7 @@ async function boot(): Promise<void> {
 
   // Tube strikes while fonts and negatives load (fonts also make line splits correct).
   await Preloader.run(Boolean(stage), reduced);
+  root.classList.add('is-ready');
 
   Safelight.init(stage, reduced);
   Develop.init(stage, reduced);
