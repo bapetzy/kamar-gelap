@@ -116,7 +116,7 @@ button {
 .frame {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: var(--ar, 4 / 5); /* each print keeps its photo's shape */
   overflow: hidden;
   background: var(--paper);
   border: 1px solid var(--line);

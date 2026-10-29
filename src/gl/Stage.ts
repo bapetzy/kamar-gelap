@@ -11,8 +11,9 @@ import { isTouch, lerpFactor } from '../lib/motion';
 /*
   One fixed canvas behind the DOM. It draws the room (safelight glow + grain) and any
   plane registered with addPlane(), each one glued to a DOM element.
-  Single render loop on gsap.ticker (added by start(), after the scenes, so scene
-  updates land before the frame is drawn). It idles when the tab is hidden or when no
+  Single loop on gsap.ticker (added by start(), after the scenes, so scene updates land
+  first). Per frame: offscreen passes (e.g. the developer's wave simulation) → planes
+  synced to the DOM → draw → after-render DOM writes. Idles when the tab is hidden or no
   watched WebGL section is on screen.
 */
 
@@ -25,6 +26,14 @@ export interface PlaneLayout {
   rot: number;
 }
 export type LayoutFn = (out: PlaneLayout) => void;
+
+export interface PlaneOptions {
+  layout?: LayoutFn; // when the element is rotated or not a plain rect
+  vertexShader?: string; // bends, curls; gets common.glsl prepended
+  segments?: [number, number]; // subdivisions for vertex work
+}
+
+export type Pass = (renderer: THREE.WebGLRenderer, time: number, dt: number) => void;
 
 interface Plane {
   el: HTMLElement;
@@ -39,24 +48,24 @@ const GRAIN = 0.09;
 
 export class Stage {
   readonly shared: Shared = createShared(GRAIN);
-  private readonly renderer: THREE.WebGLRenderer;
+  readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -10, 10);
-  private readonly quad = new THREE.PlaneGeometry(1, 1);
   private readonly bg: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
   private readonly planes = new Set<Plane>();
+  private readonly passes = new Set<Pass>();
+  private readonly afterRenders = new Set<() => void>();
   private readonly glow = new THREE.Vector2();
   private readonly glowTarget = new THREE.Vector2();
   private readonly inView = new Map<Element, boolean>();
   private readonly io: IntersectionObserver;
   private readonly offMode: () => void;
-  private readonly afterRenders = new Set<() => void>();
   private readonly box: PlaneLayout = { x: 0, y: 0, w: 0, h: 0, rot: 0 };
+  private readonly frozen: boolean; // reduced motion: grain and time hold still
   private w = 0;
   private h = 0;
   private dpr = 1;
   private active = false;
-  private readonly frozen: boolean; // reduced motion: grain holds still
 
   static create(reducedMotion = false): Stage | null {
     try {
@@ -73,6 +82,7 @@ export class Stage {
     canvas.className = 'stage';
     canvas.setAttribute('aria-hidden', 'true');
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+    this.renderer.autoClear = true;
     document.body.prepend(canvas);
 
     this.bg = new THREE.Mesh(
@@ -80,12 +90,7 @@ export class Stage {
       new THREE.ShaderMaterial({
         vertexShader: bgVert,
         fragmentShader: common + bgFrag,
-        uniforms: {
-          ...this.shared,
-          uRes: { value: new THREE.Vector2() },
-          uPointer: { value: new THREE.Vector2() },
-          uGlow: { value: GLOW_PEAK },
-        },
+        uniforms: { ...this.shared, uRes: { value: new THREE.Vector2() }, uGlow: { value: GLOW_PEAK } },
         depthTest: false,
         depthWrite: false,
       }),
@@ -105,7 +110,6 @@ export class Stage {
       entries.forEach((e) => this.inView.set(e.target, e.isIntersecting));
       this.updateActive();
     });
-
     window.addEventListener('resize', this.resize);
     document.addEventListener('visibilitychange', this.updateActive);
   }
@@ -113,6 +117,12 @@ export class Stage {
   /** Begin drawing. Call after scenes have registered their own ticker callbacks. */
   start(): void {
     gsap.ticker.add(this.tick);
+  }
+
+  /** Offscreen GPU work run before each drawn frame. Returns the remover. */
+  addPass(pass: Pass): () => void {
+    this.passes.add(pass);
+    return () => this.passes.delete(pass);
   }
 
   /** DOM writes that must wait until this frame's layout reads are done (avoids forced reflow). */
@@ -138,27 +148,20 @@ export class Stage {
     this.glowTarget.set(x, y);
   }
 
-  /**
-   * A plane glued to `el` (its bounding rect), or placed by `layout` when the element
-   * is rotated. Shared uniforms (time, mode colors, grain) are injected.
-   */
-  addPlane(
-    el: HTMLElement,
-    fragmentShader: string,
-    uniforms: Record<string, U<unknown>>,
-    layout?: LayoutFn,
-  ): THREE.ShaderMaterial {
+  /** A plane glued to `el`. Shared uniforms (time, lamp, mode colors, grain) are injected. */
+  addPlane(el: HTMLElement, fragmentShader: string, uniforms: Record<string, U<unknown>>, opts: PlaneOptions = {}) {
     const size = { value: new THREE.Vector2(1, 1) };
+    const [sx, sy] = opts.segments ?? [1, 1];
     const material = new THREE.ShaderMaterial({
-      vertexShader: planeVert,
+      vertexShader: opts.vertexShader ? common + opts.vertexShader : planeVert,
       fragmentShader: common + fragmentShader,
       uniforms: { ...this.shared, ...uniforms, uPlaneSize: size },
       depthTest: false,
       depthWrite: false,
     });
-    const mesh = new THREE.Mesh(this.quad, material);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, sx, sy), material);
     this.scene.add(mesh);
-    this.planes.add({ el, mesh, size, layout });
+    this.planes.add({ el, mesh, size, layout: opts.layout });
     return material;
   }
 
@@ -166,6 +169,7 @@ export class Stage {
     for (const p of this.planes) {
       if (p.mesh.material !== material) continue;
       this.scene.remove(p.mesh);
+      p.mesh.geometry.dispose();
       material.dispose();
       this.planes.delete(p);
     }
@@ -177,11 +181,9 @@ export class Stage {
     document.removeEventListener('visibilitychange', this.updateActive);
     this.io.disconnect();
     this.offMode();
-    this.planes.forEach((p) => (p.mesh.material as THREE.Material).dispose());
-    this.planes.clear();
+    [...this.planes].forEach((p) => this.removePlane(p.mesh.material as THREE.ShaderMaterial));
     this.bg.geometry.dispose();
     this.bg.material.dispose();
-    this.quad.dispose();
     disposeTextures();
     this.renderer.dispose();
     this.renderer.domElement.remove();
@@ -214,7 +216,7 @@ export class Stage {
         const r = p.el.getBoundingClientRect();
         Object.assign(b, { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, rot: 0 });
       }
-      const reach = Math.max(b.w, b.h); // generous cull radius, covers rotation
+      const reach = Math.max(b.w, b.h); // generous cull radius, covers rotation and bends
       const visible = b.w > 0 && b.y + reach > 0 && b.y - reach < this.h && b.x + reach > 0 && b.x - reach < this.w;
       p.mesh.visible = visible;
       if (!visible) continue;
@@ -230,13 +232,13 @@ export class Stage {
       this.afterRenders.forEach((fn) => fn());
       return;
     }
+    const dt = deltaMs / 1000;
     this.shared.uTime.value = this.frozen ? 0 : time;
-    this.glow.lerp(this.glowTarget, lerpFactor(GLOW_LERP, deltaMs / 1000));
-    (this.bg.material.uniforms.uPointer.value as THREE.Vector2).set(
-      this.glow.x * this.dpr,
-      (this.h - this.glow.y) * this.dpr,
-    );
+    this.glow.lerp(this.glowTarget, lerpFactor(GLOW_LERP, dt));
+    this.shared.uLamp.value.set(this.glow.x * this.dpr, (this.h - this.glow.y) * this.dpr);
+    this.passes.forEach((pass) => pass(this.renderer, time, dt));
     this.syncPlanes();
+    this.renderer.setRenderTarget(null);
     this.renderer.render(this.scene, this.camera);
     this.afterRenders.forEach((fn) => fn());
   };

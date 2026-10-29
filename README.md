@@ -1,6 +1,6 @@
 # Kamar Gelap
 
-An interactive darkroom. The visitor develops a roll of six photos: scroll is time in the room. Safelight red, a developer tray, prints hung to dry, then the lights come on.
+A roll of film is found in a drawer, never developed. It holds one rainy night in Jakarta, 17:40 to 05:10, in six frames. The visitor develops it in a darkroom: scroll is time in the room. Safelight red, the negatives on the light, a developer tray, prints hung to dry, then the lights come on and the night can be read in full.
 
 Every visual and every animation has to answer one question: *what is this in darkroom terms?* If it has no answer, it isn't in the site.
 
@@ -28,9 +28,20 @@ There's also a **Mode** button (bottom right, dev only) that switches between sa
 
 ## Photos
 
-Put six images in `public/frames/` as `01.webp` … `06.webp`. Portrait 4:5 works best; other aspects are cover-cropped in the grid and shown whole in the detail view. Titles, f-stops, exposure seconds and credit live in [`src/data/frames.ts`](src/data/frames.ts). The captions in `index.html` repeat that text so the page reads without JavaScript, so keep both in sync.
+Six photographs from Unsplash, used under the [Unsplash License](https://unsplash.com/license) (free to use; credit given in the footer and detail view):
 
-If a file is missing, nothing blocks: WebGL draws a procedural stand-in (sky, ridge, low sun, seeded per frame) and the DOM shows an empty sheet labelled `NO NEGATIVE`.
+| Frame | Time | Title | Photographer |
+| --- | --- | --- | --- |
+| 01 | 17:40 | Langit Menghitam | David Kristianto |
+| 02 | 18:15 | Hujan di Kaca | Muslim Atsary |
+| 03 | 18:50 | Jas Hujan | shot ed |
+| 04 | 19:30 | Bajaj | Angga Pratama |
+| 05 | 21:05 | Macet | Fahrul Razi |
+| 06 | 05:10 | Genangan | Johano Arkiang |
+
+Files live in `public/frames/01–06.webp` (long edge 1600px). Titles, hours, story lines, alt text, print exposure, credit and pixel size are in [`src/data/frames.ts`](src/data/frames.ts). After editing that file, run `npm run sync:frames` to regenerate the strip, archive and hero film markup in `index.html` (the page reads without JavaScript, so the text has to be in the HTML too).
+
+If a file is missing, nothing blocks: WebGL draws a procedural stand-in and the DOM shows an empty sheet labelled `NO NEGATIVE`.
 
 ## The five acts
 
@@ -38,10 +49,11 @@ If a file is missing, nothing blocks: WebGL draws a procedural stand-in (sky, ri
 | --- | --- | --- |
 | 0 Preloader | Black cover. The safelight tube strikes (three irregular flickers, 0.66s) while fonts and textures load, capped at 4s. Its CSS radial falloff matches the GL glow, so the hand-off is invisible. | `scenes/Preloader.ts` |
 | I Safelight | Radial glow follows the pointer or finger like a hand-held lamp (lerp 0.08, frame-rate independent). Title rises once through SplitText line masks. | `scenes/Safelight.ts` |
-| II Develop | Section pinned for 150% of the viewport. Scroll progress is development time (timer 00:00 → 01:30). The paper shader darkens each pixel from paper-white toward its tone; dark tones cross their threshold first, highlights last, with low-frequency noise for uneven development. Pointer over the tray = agitation: ripples from the last 8 points. | `scenes/Develop.ts`, `gl/shaders/paper.frag.glsl` |
-| III Hang to dry | Strip pinned and moved sideways by scroll. Each print is a damped pendulum (k 120, damping 14, clamped ±8°) that leans against the wire's speed. Hover/focus raises a `uDevelop` uniform (more density and contrast). | `scenes/Strip.ts`, `gl/shaders/print.frag.glsl` |
-| IV Lights on | Pull-cord `<button>`: drag past 60px or click / Enter / Space. Three irregular flickers, then the whole site switches to daylight tokens. Auto-triggers when the archive is reached without pulling. | `scenes/LightsOn.ts` |
-| V Archive | Six true black-and-white prints in an asymmetric grid. A print opens into a full detail view with GSAP Flip; prev/next swap prints; Esc or Close flips it back home. | `scenes/Archive.ts` |
+| I The found roll | The six photos as B&W negatives on a 35mm strip (sprocket holes, 38mm pitch), pulled out of the canister on load. The strip curls in a slow travelling wave and is backlit by the lamp: dense silver blocks light, clear base and holes let it through, so moving the lamp is how you read it. Drifts out with depth as you scroll on. | `scenes/Film.ts`, `gl/shaders/film.*.glsl` |
+| II Develop | Section pinned for 150% of the viewport. Scroll progress is development time (timer 00:00 → 01:30). The paper shader darkens each pixel from paper-white toward its tone; dark tones cross their threshold first, highlights last, with low-frequency noise for uneven development. Development time has inertia. The liquid is a GPU wave simulation (two half-float targets, 2D wave equation): the pointer stirs it, scrolling rocks the tray from the edge, and crests facing the lamp catch light. Desktop only. | `scenes/Develop.ts`, `gl/shaders/paper.frag.glsl` |
+| III Hang to dry | Strip pinned and moved sideways by scroll. Each print is a damped pendulum (k 120, damping 14, clamped ±8°) that leans against the wire's speed; the wire trails the scroll (scrub 0.7). Wet paper bends with the swing (vertex shader). Prints are clipped on one by one and swing in. Hover/focus raises a `uDevelop` uniform (more density and contrast). | `scenes/Strip.ts`, `gl/shaders/print.frag.glsl` |
+| IV Lights on | Pull-cord `<button>`: drag past 60px or click / Enter / Space. Three irregular flickers, then the whole site switches to daylight tokens and stays overexposed for 1.8s while your eyes adjust. Auto-triggers when the archive is reached without pulling. | `scenes/LightsOn.ts` |
+| V Archive | Six true black-and-white prints in an asymmetric grid. Prints slide onto the table one by one. A print opens into a full detail view with GSAP Flip: its hour, one line of the story, print notes and credit; prev/next walk through the night; Esc or Close flips it back home. | `scenes/Archive.ts` |
 
 ## Architecture
 
@@ -99,7 +111,11 @@ The glow peak is held at a 28% mix, so `--text` over the brightest spot stays ar
 - **Archive detail:** the page behind goes `inert`, focus moves to Close and returns to the print. Esc closes.
 - **Mobile (≤768px):** same five acts, the glow follows touch, ripple is off, and the detail view stacks.
 
+Act titles rise out of line masks and copy surfaces line by line, like an image in the developer (`scenes/Reveal.ts`). Lenis runs heavier than default (lerp 0.075).
+
 ## Performance (measured)
+
+The numbers below were measured before the found-roll update, which added the film strip, the wave simulation and the print bend. They need re-measuring.
 
 Lighthouse 13.6, desktop preset, production build via `vite preview`, three runs:
 

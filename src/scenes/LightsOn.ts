@@ -7,6 +7,7 @@ import { DUR, EASE } from '../lib/motion';
 // Act IV. A pull cord for the room light. Drag it down past 60px (or click / press it)
 // and the fluorescent tube stutters on: three irregular flashes, then daylight.
 // Scrolling into the archive without pulling switches the light on anyway.
+// Once lit, the room is overexposed for a moment, the way eyes need time after a darkroom.
 
 const THRESHOLD = 60; // px of pull that closes the switch
 const MAX_PULL = 110;
@@ -28,6 +29,7 @@ let section: HTMLElement | null = null;
 let stageRef: Stage | null = null;
 let auto: ScrollTrigger | null = null;
 let flicker: gsap.core.Timeline | null = null;
+const ADJUST_S = 1.8; // seconds for eyes to settle after the light comes on
 const cleanups: Array<() => void> = [];
 
 function lightsOn(): void {
@@ -38,6 +40,19 @@ function lightsOn(): void {
   if (instant) return setMode('day');
   flicker = gsap.timeline({ delay: STARTER_DELAY });
   FLICKER.forEach(([t, mode]) => flicker!.call(setMode, [mode], t));
+  flicker.call(adjustEyes, [], FLICKER[FLICKER.length - 1][0]);
+}
+
+/** Overexposure that fades: GL prints wash toward paper-white, the DOM under a paper veil. */
+function adjustEyes(): void {
+  if (stageRef) {
+    gsap.fromTo(stageRef.shared.uExposure, { value: 2 }, { value: 1, duration: ADJUST_S, ease: 'power3.out' });
+  }
+  const veil = document.createElement('div');
+  veil.className = 'washout';
+  veil.setAttribute('aria-hidden', 'true');
+  document.body.append(veil);
+  gsap.fromTo(veil, { opacity: 0.8 }, { opacity: 0, duration: ADJUST_S, ease: 'power3.out', onComplete: () => veil.remove() });
 }
 
 function on<K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (e: HTMLElementEventMap[K]) => void) {

@@ -23,10 +23,22 @@
   background: var(--line);
 }
 
-/* sized so the pinned strip (head + prints + captions) fits one viewport */
+/* every print shares one height (fits the pinned viewport); width follows its photo */
 .print {
-  --strip-chrome: 26rem;
-  width: min(clamp(200px, 22vw, 320px), calc((100svh - var(--strip-chrome)) * 0.8));
+  --strip-chrome: 27rem;
+  --print-h: clamp(220px, calc(100svh - var(--strip-chrome)), 420px);
+  width: calc(var(--print-h) * var(--ar));
+  min-width: 150px;
+}
+
+.print figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.75em;
+}
+
+.print__title {
+  flex-basis: 100%;
 }
 
 .print__clip {

@@ -4,19 +4,25 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type Lenis from 'lenis';
 import negativeGlsl from '../gl/shaders/negative.glsl?raw';
 import printFrag from '../gl/shaders/print.frag.glsl?raw';
+import printVert from '../gl/shaders/print.vert.glsl?raw';
 import type { PlaneLayout, Stage } from '../gl/Stage';
 import { negativeUniforms } from '../gl/shared';
 import { frames } from '../data/frames';
 import { DUR, EASE, lerpFactor } from '../lib/motion';
 
 // Act III. Six prints clipped to a wire. Scroll drags the wire sideways; each print is a
-// damped pendulum that leans against the motion and settles when the wire stops.
+// damped pendulum that leans against the motion and settles when the wire stops; the wet
+// paper bends with the swing. When the strip first comes into view, the prints are
+// clipped on one by one and swing in.
 
 const K = 120; // spring stiffness (1/s²)
 const DAMPING = 14; // (1/s) → slightly under-damped: a couple of small swings, then rest
 const MAX_DEG = 8;
 const GAIN = MAX_DEG / 1400; // degrees of lean per px/s of wire speed
 const STIFFNESS = [1, 0.92, 1.07, 0.96, 1.1, 0.94]; // each print hangs a little differently
+const SCRUB = 0.7; // seconds the wire takes to catch up with the scroll
+const CLIP_DEG = 7; // release angle when a print is clipped on
+const CLIP_STAGGER = 0.11;
 
 interface Print {
   fig: HTMLElement;
@@ -28,6 +34,7 @@ interface Print {
   pivot: { x: number; y: number }; // in track coords
   local: { x: number; y: number; w: number; h: number }; // frame center from pivot
   develop: { value: number };
+  bend: { value: number }; // swing speed for the vertex bend
   material?: THREE.ShaderMaterial;
 }
 
@@ -98,6 +105,7 @@ function step(_time: number, deltaMs: number): void {
     const accel = -K * p.k * (p.theta - target) - DAMPING * p.omega;
     p.omega += accel * dt;
     p.theta = clamp(p.theta + p.omega * dt, -MAX_DEG, MAX_DEG);
+    p.bend.value = p.omega;
   }
 }
 
@@ -145,6 +153,7 @@ export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean)
     pivot: { x: 0, y: 0 },
     local: { x: 0, y: 0, w: 0, h: 0 },
     develop: { value: 0 },
+    bend: { value: 0 },
   }));
   measure();
   ScrollTrigger.addEventListener('refresh', measure); // any resize, pinned or not
@@ -161,8 +170,8 @@ export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean)
     p.material = stage.addPlane(
       p.frame,
       negativeGlsl + printFrag,
-      { ...negativeUniforms(frames[i].src, i + 1), uDevelop: p.develop },
-      layoutFor(p),
+      { ...negativeUniforms(frames[i].src, i + 1), uDevelop: p.develop, uBend: p.bend },
+      { layout: layoutFor(p), vertexShader: printVert, segments: [1, 14] },
     );
     p.frame.classList.add('is-gl');
   });
@@ -173,6 +182,20 @@ export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean)
   else gsap.ticker.add(write);
   if (reduced) return; // native horizontal scroll, see layers.css
 
+  // Clipped on one at a time: each print is let go from a small angle and swings in.
+  ScrollTrigger.create({
+    trigger: section,
+    start: 'top 70%',
+    once: true,
+    onEnter: () =>
+      prints.forEach((p, i) =>
+        gsap.delayedCall(i * CLIP_STAGGER, () => {
+          p.theta = (i % 2 ? -1 : 1) * (CLIP_DEG - (i % 3));
+          p.omega = 0;
+        }),
+      ),
+  });
+
   section.classList.add('is-pinned');
   tween = gsap.to(track, {
     x: () => -distance(),
@@ -182,7 +205,7 @@ export function init(stage: Stage | null, lenis: Lenis | null, reduced: boolean)
       start: 'top top',
       end: () => `+=${distance()}`,
       pin: true,
-      scrub: true,
+      scrub: SCRUB, // the wire trails the scroll a little: inertia
       invalidateOnRefresh: true,
     },
   });

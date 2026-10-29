@@ -41,6 +41,15 @@
   );
 }
 
+/* ---------- IV · eyes adjusting after the lights come on ---------- */
+.washout {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--bg);
+  pointer-events: none;
+}
+
 /* ---------- V · detail ---------- */
 .detail {
   position: fixed;

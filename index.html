@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Kamar Gelap — cuci satu gulungan berisi enam foto di bawah lampu merah, lalu nyalakan lampunya." />
+    <meta name="description" content="Kamar Gelap — satu rol film temuan, enam frame dari satu malam hujan di Jakarta. Cuci di bawah lampu merah, lalu nyalakan lampunya." />
     <meta name="theme-color" content="#0A0505" />
     <title>Kamar Gelap</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -18,13 +18,24 @@
       <!-- I · SAFELIGHT -->
       <section id="safelight" class="act act--safelight grid" aria-labelledby="safelight-title">
         <div class="act__edge label">
-          <span>Roll 01 — 6 frames — ISO 400</span>
+          <span>Found roll — 6 frames — ISO 400</span>
           <span>Safelight · 15W</span>
+        </div>
+        <div class="filmstrip" aria-hidden="true">
+          <div class="filmstrip__frames">
+            <img src="/frames/01.webp" alt="" width="1600" height="1067" decoding="async" />
+            <img src="/frames/02.webp" alt="" width="1200" height="1600" decoding="async" />
+            <img src="/frames/03.webp" alt="" width="1064" height="1600" decoding="async" />
+            <img src="/frames/04.webp" alt="" width="1600" height="1071" decoding="async" />
+            <img src="/frames/05.webp" alt="" width="1000" height="1600" decoding="async" />
+            <img src="/frames/06.webp" alt="" width="1600" height="1200" decoding="async" />
+          </div>
+          <p class="filmstrip__edge label"><span>Hold the lamp closer</span><span>1 · 2 · 3 · 4 · 5 · 6</span></p>
         </div>
         <div class="safelight__title">
           <h1 id="safelight-title" class="display" data-reveal>Kamar <em>Gelap</em></h1>
           <p class="copy safelight__copy">
-            Enam negatif menunggu di bawah lampu merah. Gulir perlahan — di ruangan ini, waktu adalah bahan kimia.
+            Satu rol film ditemukan di laci, belum pernah dicuci. Isinya satu malam hujan di Jakarta — gulir untuk mencucinya.
           </p>
         </div>
       </section>
@@ -33,22 +44,22 @@
       <section id="develop" class="act act--develop grid" aria-labelledby="develop-title">
         <div class="act__edge label">
           <span>02 — Develop</span>
-          <span>D-76 · 1+1 · 20°C</span>
+          <span>D-76 · 1+1 · 20°C · 17:40</span>
         </div>
         <div class="develop__text">
           <h2 id="develop-title" class="display">Cuci</h2>
-          <p class="copy">Kertas foto tenggelam dalam cairan pengembang. Bayangan muncul lebih dulu, cahaya paling akhir.</p>
+          <p class="copy" data-develop-text>Frame pertama tenggelam di cairan pengembang. Bayangan muncul lebih dulu, langit mendung paling akhir.</p>
           <p class="label develop__timer">
             <span class="visually-hidden">Waktu cuci </span><span data-timer>00:00</span> / 01:30
           </p>
         </div>
         <figure class="tray">
           <div class="tray__bath">
-            <div class="frame">
-              <img src="/frames/01.webp" alt="" width="800" height="1000" decoding="async" data-frame="1" />
+            <div class="frame" style="--ar: 1600 / 1067">
+              <img src="/frames/01.webp" alt="Gedung-gedung tinggi Jakarta di bawah awan mendung tebal" width="1600" height="1067" decoding="async" data-frame="1" />
             </div>
           </div>
-          <figcaption class="label">Frame 01 · Agitate — move over tray</figcaption>
+          <figcaption class="label">Frame 01 · 17:40 · Agitate — move over the tray</figcaption>
         </figure>
       </section>
 
@@ -61,17 +72,17 @@
           </div>
           <div class="strip__head">
             <h2 id="strip-title" class="display">Jemur</h2>
-            <p class="copy">Cetakan dijepit di kawat sampai kering. Dekati satu, dan gambarnya makin pekat.</p>
+            <p class="copy" data-develop-text>Enam cetakan, satu malam: dari langit mendung sampai subuh. Dekati satu untuk mempertajamnya.</p>
           </div>
         </div>
         <div class="strip__viewport">
           <ol class="strip__track">
-            <li class="print"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/01.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="1" /></div><figcaption class="label">Frame 01 · f/8 · 12s · Jendela Pagi</figcaption></figure></li>
-            <li class="print"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/02.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="2" /></div><figcaption class="label">Frame 02 · f/5.6 · 9s · Pasar Subuh</figcaption></figure></li>
-            <li class="print"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/03.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="3" /></div><figcaption class="label">Frame 03 · f/11 · 16s · Tangga Rumah</figcaption></figure></li>
-            <li class="print"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/04.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="4" /></div><figcaption class="label">Frame 04 · f/8 · 14s · Hujan di Kaca</figcaption></figure></li>
-            <li class="print"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/05.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="5" /></div><figcaption class="label">Frame 05 · f/5.6 · 10s · Tangan Ibu</figcaption></figure></li>
-            <li class="print"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/06.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="6" /></div><figcaption class="label">Frame 06 · f/16 · 20s · Pelabuhan Sore</figcaption></figure></li>
+            <li class="print" style="--ar: 1600 / 1067"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/01.webp" alt="Gedung-gedung tinggi Jakarta di bawah awan mendung tebal" width="1600" height="1067" loading="lazy" decoding="async" data-frame="1" /></div><figcaption class="label"><span>Frame 01 · 17:40</span> <span>f/8 · 12s</span> <span class="print__title">Langit Menghitam</span></figcaption></figure></li>
+            <li class="print" style="--ar: 1200 / 1600"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/02.webp" alt="Jalan dan mobil terlihat kabur di balik kaca penuh tetes hujan" width="1200" height="1600" loading="lazy" decoding="async" data-frame="2" /></div><figcaption class="label"><span>Frame 02 · 18:15</span> <span>f/5.6 · 9s</span> <span class="print__title">Hujan di Kaca</span></figcaption></figure></li>
+            <li class="print" style="--ar: 1064 / 1600"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/03.webp" alt="Rombongan pengendara motor berjas hujan di jalan basah" width="1064" height="1600" loading="lazy" decoding="async" data-frame="3" /></div><figcaption class="label"><span>Frame 03 · 18:50</span> <span>f/8 · 14s</span> <span class="print__title">Jas Hujan</span></figcaption></figure></li>
+            <li class="print" style="--ar: 1600 / 1071"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/04.webp" alt="Pengemudi duduk di dalam bajaj merah di tepi jalan" width="1600" height="1071" loading="lazy" decoding="async" data-frame="4" /></div><figcaption class="label"><span>Frame 04 · 19:30</span> <span>f/11 · 16s</span> <span class="print__title">Bajaj</span></figcaption></figure></li>
+            <li class="print" style="--ar: 1000 / 1600"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/05.webp" alt="Deretan mobil terjebak macet di jalan kota pada malam hari" width="1000" height="1600" loading="lazy" decoding="async" data-frame="5" /></div><figcaption class="label"><span>Frame 05 · 21:05</span> <span>f/5.6 · 10s</span> <span class="print__title">Macet</span></figcaption></figure></li>
+            <li class="print" style="--ar: 1600 / 1200"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame"><img src="/frames/06.webp" alt="Rumah dan tiang listrik terpantul di genangan air" width="1600" height="1200" loading="lazy" decoding="async" data-frame="6" /></div><figcaption class="label"><span>Frame 06 · 05:10</span> <span>f/16 · 20s</span> <span class="print__title">Genangan</span></figcaption></figure></li>
           </ol>
         </div>
       </section>
@@ -81,7 +92,7 @@
         <div class="lights__text">
           <p class="label">04 — Lights on</p>
           <h2 id="lights-title" class="display">Lampu</h2>
-          <p class="copy">Semua cetakan sudah terfiksasi. Tarik talinya, nyalakan lampu.</p>
+          <p class="copy" data-develop-text>Hujan sudah reda, cetakan sudah kering. Tarik talinya, lihat malam itu dengan lampu menyala.</p>
         </div>
         <button class="cord" type="button" data-cord aria-label="Pull — tarik tali, nyalakan lampu">
           <span class="cord__line" aria-hidden="true"></span>
@@ -94,24 +105,24 @@
       <section id="archive" class="act act--archive grid" aria-labelledby="archive-title">
         <div class="act__edge label">
           <span>05 — Archive</span>
-          <span>Fiber print · Selenium toned</span>
+          <span>17:40 → 05:10 · Fiber print</span>
         </div>
         <div class="archive__head">
           <h2 id="archive-title" class="display"><em>Arsip</em></h2>
-          <p class="copy">Lampu menyala, inilah gulungan pertama. Hitam, putih, dan semua abu-abu di antaranya.</p>
+          <p class="copy" data-develop-text>Satu malam di Jakarta, enam frame. Pilih satu untuk membaca ceritanya.</p>
         </div>
         <ol class="archive__grid">
-          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="1"><span class="frame"><img src="/frames/01.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="1" /></span><span class="label">01 — Jendela Pagi</span></button></li>
-          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="2"><span class="frame"><img src="/frames/02.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="2" /></span><span class="label">02 — Pasar Subuh</span></button></li>
-          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="3"><span class="frame"><img src="/frames/03.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="3" /></span><span class="label">03 — Tangga Rumah</span></button></li>
-          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="4"><span class="frame"><img src="/frames/04.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="4" /></span><span class="label">04 — Hujan di Kaca</span></button></li>
-          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="5"><span class="frame"><img src="/frames/05.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="5" /></span><span class="label">05 — Tangan Ibu</span></button></li>
-          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="6"><span class="frame"><img src="/frames/06.webp" alt="" width="800" height="1000" loading="lazy" decoding="async" data-frame="6" /></span><span class="label">06 — Pelabuhan Sore</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="1"><span class="frame" style="--ar: 1600 / 1067"><img src="/frames/01.webp" alt="Gedung-gedung tinggi Jakarta di bawah awan mendung tebal" width="1600" height="1067" loading="lazy" decoding="async" data-frame="1" /></span><span class="label">01 · 17:40 — Langit Menghitam</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="2"><span class="frame" style="--ar: 1200 / 1600"><img src="/frames/02.webp" alt="Jalan dan mobil terlihat kabur di balik kaca penuh tetes hujan" width="1200" height="1600" loading="lazy" decoding="async" data-frame="2" /></span><span class="label">02 · 18:15 — Hujan di Kaca</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="3"><span class="frame" style="--ar: 1064 / 1600"><img src="/frames/03.webp" alt="Rombongan pengendara motor berjas hujan di jalan basah" width="1064" height="1600" loading="lazy" decoding="async" data-frame="3" /></span><span class="label">03 · 18:50 — Jas Hujan</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="4"><span class="frame" style="--ar: 1600 / 1071"><img src="/frames/04.webp" alt="Pengemudi duduk di dalam bajaj merah di tepi jalan" width="1600" height="1071" loading="lazy" decoding="async" data-frame="4" /></span><span class="label">04 · 19:30 — Bajaj</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="5"><span class="frame" style="--ar: 1000 / 1600"><img src="/frames/05.webp" alt="Deretan mobil terjebak macet di jalan kota pada malam hari" width="1000" height="1600" loading="lazy" decoding="async" data-frame="5" /></span><span class="label">05 · 21:05 — Macet</span></button></li>
+          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="6"><span class="frame" style="--ar: 1600 / 1200"><img src="/frames/06.webp" alt="Rumah dan tiang listrik terpantul di genangan air" width="1600" height="1200" loading="lazy" decoding="async" data-frame="6" /></span><span class="label">06 · 05:10 — Genangan</span></button></li>
         </ol>
         <footer class="footer label">
-          <span>Bryan Paulo — Kamar Gelap, 2026</span>
+          <span>Kamar Gelap — Bryan Paulo, 2026</span>
           <span>Vite · TypeScript · GSAP · Lenis · Three.js</span>
-          <span>Photographs — Bryan Paulo</span>
+          <span data-credits>Foto: David Kristianto, Muslim Atsary, shot ed, Angga Pratama, Fahrul Razi, Johano Arkiang — Unsplash</span>
         </footer>
       </section>
     </main>
@@ -124,13 +135,13 @@
           <div class="frame detail__frame"><img alt="" decoding="async" /></div>
         </div>
         <div class="detail__meta">
-          <p class="label" data-detail="no">Frame 01 / 06</p>
-          <h2 id="detail-title" class="detail__title"><em data-detail="title">Jendela Pagi</em></h2>
+          <p class="label"><span data-detail="no">Frame 01 / 06</span> · <span data-detail="time">17:40</span></p>
+          <h2 id="detail-title" class="detail__title"><em data-detail="title">Langit Menghitam</em></h2>
+          <p class="copy" data-detail="line">Langit di atas kota menghitam sebelum jam pulang kantor.</p>
           <dl class="label detail__specs">
-            <div><dt>Aperture</dt><dd data-detail="aperture">f/8</dd></div>
-            <div><dt>Exposure</dt><dd data-detail="seconds">12s</dd></div>
+            <div><dt>Print</dt><dd><span data-detail="aperture">f/8</span> · <span data-detail="seconds">12s</span></dd></div>
             <div><dt>Film</dt><dd>ISO 400</dd></div>
-            <div><dt>Photo</dt><dd data-detail="credit">Bryan Paulo</dd></div>
+            <div><dt>Photo</dt><dd><span data-detail="credit">David Kristianto</span> / Unsplash</dd></div>
           </dl>
           <div class="detail__nav label">
             <button type="button" data-detail="prev">← Prev frame</button>

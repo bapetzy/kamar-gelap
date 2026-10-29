@@ -14,6 +14,8 @@ export interface Shared {
   uBg: U<THREE.Vector3>;
   uSafelight: U<THREE.Vector3>;
   uText: U<THREE.Vector3>;
+  uLamp: U<THREE.Vector2>; // hand-held safelight, device px, y up
+  uExposure: U<number>; // 1 = normal; >1 = eyes not yet adjusted to the light
 }
 
 export function createShared(grain: number): Shared {
@@ -25,6 +27,8 @@ export function createShared(grain: number): Shared {
     uBg: { value: new THREE.Vector3() },
     uSafelight: { value: new THREE.Vector3() },
     uText: { value: new THREE.Vector3() },
+    uLamp: { value: new THREE.Vector2() },
+    uExposure: { value: 1 },
   };
 }
 

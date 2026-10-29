@@ -16,10 +16,12 @@ import { getMode, onMode, setMode } from './lib/mode';
 import { DUR, prefersReducedMotion } from './lib/motion';
 import * as Preloader from './scenes/Preloader';
 import * as Safelight from './scenes/Safelight';
+import * as Film from './scenes/Film';
 import * as Develop from './scenes/Develop';
 import * as Strip from './scenes/Strip';
 import * as LightsOn from './scenes/LightsOn';
 import * as Archive from './scenes/Archive';
+import * as Reveal from './scenes/Reveal';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, Flip);
 
@@ -34,7 +36,8 @@ function markMissingFrames(): void {
 
 // One clock for everything: Lenis, ScrollTrigger and the GL stage all run on gsap.ticker.
 function startScroll(): Lenis {
-  const lenis = new Lenis({ autoRaf: false });
+  // Heavier than default: the page glides like a hand moving through liquid.
+  const lenis = new Lenis({ autoRaf: false, lerp: 0.075, wheelMultiplier: 0.9, touchMultiplier: 1.1 });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -83,10 +86,12 @@ async function boot(): Promise<void> {
   root.classList.add('is-ready');
 
   Safelight.init(stage, reduced);
+  Film.init(stage, reduced);
   Develop.init(stage, reduced);
   Strip.init(stage, lenis, reduced);
   LightsOn.init(stage, reduced);
   Archive.init(lenis, reduced);
+  Reveal.init(reduced);
   if (reduced) crossfadeActs();
   stage?.start(); // after scenes, so their ticker work lands before the frame is drawn
   ScrollTrigger.refresh();

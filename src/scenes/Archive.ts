@@ -5,10 +5,11 @@ import { frames, pad2 } from '../data/frames';
 import { closeModal, onEscape, openModal } from '../lib/a11y';
 import { DUR, EASE } from '../lib/motion';
 
-// Act V. Lights on: the roll laid out as true black-and-white prints. Picking one up
-// carries it (GSAP Flip) to a full view with its exposure notes; Esc puts it back.
+// Act V. Lights on: the night laid out as true black-and-white prints. Picking one up
+// carries it (GSAP Flip) to a full view with its hour, one line of the story and its
+// print notes; prev/next walk through the night; Esc puts it back.
 
-type Field = 'no' | 'title' | 'aperture' | 'seconds' | 'credit' | 'prev' | 'next' | 'close';
+type Field = 'no' | 'time' | 'title' | 'line' | 'aperture' | 'seconds' | 'credit' | 'prev' | 'next' | 'close';
 
 let items: HTMLButtonElement[] = [];
 let detail: HTMLElement | null = null;
@@ -35,7 +36,10 @@ function fill(i: number): void {
   const f = frames[i];
   current = i;
   field.no.textContent = `Frame ${pad2(f.no)} / ${pad2(frames.length)}`;
+  field.time.textContent = f.time;
   field.title.textContent = f.title;
+  field.line.textContent = f.line;
+  img.alt = f.alt;
   field.aperture.textContent = f.aperture;
   field.seconds.textContent = `${f.seconds}s`;
   field.credit.textContent = f.credit;
@@ -125,7 +129,7 @@ export function init(lenis: Lenis | null, reducedMotion: boolean): void {
   img = media.querySelector('img')!;
   backdrop = detail.querySelector<HTMLElement>('.detail__backdrop')!;
   meta = detail.querySelector<HTMLElement>('.detail__meta')!;
-  const keys: Field[] = ['no', 'title', 'aperture', 'seconds', 'credit', 'prev', 'next', 'close'];
+  const keys: Field[] = ['no', 'time', 'title', 'line', 'aperture', 'seconds', 'credit', 'prev', 'next', 'close'];
   field = Object.fromEntries(
     keys.map((k) => [k, detail!.querySelector<HTMLElement>(`[data-detail="${k}"]`)!]),
   ) as Record<Field, HTMLElement>;

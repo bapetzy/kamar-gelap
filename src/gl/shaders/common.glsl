@@ -8,6 +8,8 @@ uniform float uGrain;     // grain strength
 uniform vec3 uBg;
 uniform vec3 uSafelight;
 uniform vec3 uText;
+uniform vec2 uLamp;        // hand-held safelight, device px, y up
+uniform float uExposure;   // >1 right after the lights come on
 
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -51,8 +53,15 @@ vec3 grain(vec2 fragCoord) {
 // Safelight: paper-white reads bright red, blacks sink into the room.
 // Lights on: true black-and-white print in the daylight tokens.
 vec3 toneColor(float tone) {
+  tone = 1.0 - (1.0 - tone) / uExposure; // overexposed eyes: everything washes toward paper
   vec3 dark = mix(uBg, uSafelight, smoothstep(0.0, 0.65, tone));
   dark = mix(dark, uText, smoothstep(0.65, 1.0, tone));
   vec3 day = mix(uText, uBg, tone);
   return mix(dark, day, uDay);
+}
+
+// How much of the hand-held lamp reaches this pixel (1 under the lamp, ~0 far away).
+float lampLight(vec2 fragCoord, float reach) {
+  float r = length(fragCoord - uLamp) / (uDpr * reach);
+  return exp(-r * r);
 }
