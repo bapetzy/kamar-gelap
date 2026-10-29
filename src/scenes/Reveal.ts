@@ -20,7 +20,7 @@ export function init(reduced: boolean): void {
   if (reduced) return;
 
   document.querySelectorAll<HTMLElement>('main section:not(#safelight) h2.display').forEach((h) => {
-    const split = SplitText.create(h, { type: 'lines', mask: 'lines', linesClass: 'line' });
+    const split = SplitText.create(h, { type: 'lines', mask: 'lines', linesClass: 'line', aria: 'none' });
     splits.push(split);
     once(h, 'top 82%', () =>
       gsap.from(split.lines, { yPercent: 105, duration: DUR.long, ease: EASE.reveal, stagger: 0.1, onComplete: () => split.revert() }),
@@ -28,7 +28,7 @@ export function init(reduced: boolean): void {
   });
 
   document.querySelectorAll<HTMLElement>('[data-develop-text]').forEach((p) => {
-    const split = SplitText.create(p, { type: 'lines', linesClass: 'line' });
+    const split = SplitText.create(p, { type: 'lines', linesClass: 'line', aria: 'none' }); // aria-label isn't valid on <p>
     splits.push(split);
     once(p, 'top 85%', () =>
       gsap.from(split.lines, {

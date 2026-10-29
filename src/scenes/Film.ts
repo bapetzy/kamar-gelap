@@ -33,6 +33,7 @@ async function buildAtlas(): Promise<THREE.CanvasTexture | null> {
   textures.forEach((t, i) => {
     const img = t?.image as HTMLImageElement | ImageBitmap | undefined;
     if (!img) return;
+    const flipped = t?.flipY === false; // bitmaps arrive upside down (see shared.ts)
     const s = Math.max(CELL_W / img.width, CELL_H / img.height);
     const w = img.width * s;
     const h = img.height * s;
@@ -40,6 +41,10 @@ async function buildAtlas(): Promise<THREE.CanvasTexture | null> {
     ctx.beginPath();
     ctx.rect(i * CELL_W, 0, CELL_W, CELL_H);
     ctx.clip();
+    if (flipped) {
+      ctx.translate(0, CELL_H);
+      ctx.scale(1, -1);
+    }
     ctx.drawImage(img, i * CELL_W + (CELL_W - w) / 2, (CELL_H - h) / 2, w, h);
     ctx.restore();
   });

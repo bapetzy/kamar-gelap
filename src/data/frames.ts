@@ -53,10 +53,10 @@ const rows: Row[] = [
     h: 1600,
   },
   {
-    title: 'Bajaj',
+    title: 'Roda Tiga',
     time: '19:30',
-    line: 'Bajaj merah menunggu penumpang yang tidak kunjung datang.',
-    alt: 'Pengemudi duduk di dalam bajaj merah di tepi jalan',
+    line: 'Motor roda tiga menerobos genangan, terpal dagangannya basah kuyup.',
+    alt: 'Pengendara motor roda tiga pengangkut barang melaju di jalan basah',
     aperture: 'f/11',
     seconds: 16,
     credit: 'Angga Pratama',

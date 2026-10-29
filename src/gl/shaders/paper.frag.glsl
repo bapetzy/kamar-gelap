@@ -23,7 +23,7 @@ vec3 surface(vec2 uv) {
 
 void main() {
   vec3 s = surface(vUv);
-  vec2 uv = clamp(vUv + s.xy * 0.06, 0.0, 1.0); // refraction through the developer
+  vec2 uv = clamp(vUv + s.xy * 0.22, 0.0, 1.0); // refraction through the developer
   float lum = negativeLum(uv);
 
   float unevenness = fbm(uv * 2.5 + 7.0) - 0.5;
@@ -38,7 +38,7 @@ void main() {
 
   // Crests facing the lamp catch light; troughs fall into shadow.
   vec2 toLamp = normalize(uLamp - gl_FragCoord.xy + 1e-4);
-  float facing = dot(s.xy * 18.0, toLamp);
+  float facing = dot(s.xy * 14.0, toLamp);
   float glint = pow(clamp(facing, 0.0, 1.0), 2.0) * (0.35 + 0.65 * lamp);
   tone = clamp(tone + glint * 0.5 - clamp(-facing, 0.0, 1.0) * 0.08, 0.0, 1.0);
 

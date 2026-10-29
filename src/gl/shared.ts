@@ -49,13 +49,26 @@ export function syncShared(s: Shared, mode: Mode): void {
 }
 
 const cache = new Map<string, Promise<THREE.Texture | null>>();
-const loader = new THREE.TextureLoader();
+// ImageBitmapLoader decodes off the main thread (no long task when six 1600px photos land).
+// Bitmaps can't be flipped at upload, so they are decoded already flipped (flipY = false).
+const bitmapLoader = typeof createImageBitmap === 'function' ? new THREE.ImageBitmapLoader() : null;
+bitmapLoader?.setOptions({ imageOrientation: 'flipY', premultiplyAlpha: 'none' });
+const imageLoader = new THREE.TextureLoader();
+
+async function fetchTexture(src: string): Promise<THREE.Texture> {
+  if (!bitmapLoader) return imageLoader.loadAsync(src);
+  const bitmap = await bitmapLoader.loadAsync(src);
+  const tex = new THREE.Texture(bitmap as ImageBitmap);
+  tex.flipY = false;
+  tex.needsUpdate = true;
+  return tex;
+}
 
 /** Resolves null when the file is missing; callers fall back to the procedural negative. */
 export function loadTexture(src: string): Promise<THREE.Texture | null> {
   let p = cache.get(src);
   if (!p) {
-    p = loader.loadAsync(src).catch(() => null);
+    p = fetchTexture(src).catch(() => null);
     cache.set(src, p);
   }
   return p;

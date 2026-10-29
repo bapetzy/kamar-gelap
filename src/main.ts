@@ -67,6 +67,10 @@ function mountDevToggle(): void {
 }
 
 async function boot(): Promise<void> {
+  // A story is told from the start: a reload must not drop the visitor mid-roll
+  // (or past the lights-on trigger) where the browser last left them.
+  history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
   const reduced = prefersReducedMotion();
   const root = document.documentElement;
   if (reduced) root.classList.add('reduced');
@@ -93,6 +97,8 @@ async function boot(): Promise<void> {
   Archive.init(lenis, reduced);
   Reveal.init(reduced);
   if (reduced) crossfadeActs();
+  // Shaders compile while the cover is still down (capped, never blocks the page).
+  if (stage) await Promise.race([stage.precompile(), new Promise((r) => setTimeout(r, 1200))]);
   stage?.start(); // after scenes, so their ticker work lands before the frame is drawn
   ScrollTrigger.refresh();
 

@@ -9,12 +9,10 @@ import { getMode, onMode } from '../lib/mode';
 import { isTouch, lerpFactor } from '../lib/motion';
 
 /*
-  One fixed canvas behind the DOM. It draws the room (safelight glow + grain) and any
-  plane registered with addPlane(), each one glued to a DOM element.
-  Single loop on gsap.ticker (added by start(), after the scenes, so scene updates land
-  first). Per frame: offscreen passes (e.g. the developer's wave simulation) → planes
-  synced to the DOM → draw → after-render DOM writes. Idles when the tab is hidden or no
-  watched WebGL section is on screen.
+  One fixed canvas behind the DOM: the room (safelight glow + grain) plus planes glued to
+  DOM elements. One loop on gsap.ticker, added by start() after the scenes. Per frame:
+  offscreen passes (wave sim) → planes synced to the DOM → draw → after-render DOM writes.
+  Idles when the tab is hidden or no watched WebGL section is on screen.
 */
 
 /** Plane placement in client px: center, size, clockwise rotation (radians, like CSS). */
@@ -117,6 +115,12 @@ export class Stage {
   /** Begin drawing. Call after scenes have registered their own ticker callbacks. */
   start(): void {
     gsap.ticker.add(this.tick);
+  }
+
+  /** Compile every plane's shaders without blocking (KHR_parallel_shader_compile). */
+  async precompile(): Promise<void> {
+    this.planes.forEach((p) => (p.mesh.visible = true));
+    await this.renderer.compileAsync(this.scene, this.camera);
   }
 
   /** Offscreen GPU work run before each drawn frame. Returns the remover. */

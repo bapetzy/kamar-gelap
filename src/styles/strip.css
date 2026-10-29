@@ -25,9 +25,9 @@
 
 /* every print shares one height (fits the pinned viewport); width follows its photo */
 .print {
-  --strip-chrome: 27rem;
+  --strip-chrome: 31rem; /* head + wire + 3-line caption */
   --print-h: clamp(220px, calc(100svh - var(--strip-chrome)), 420px);
-  width: calc(var(--print-h) * var(--ar));
+  width: min(calc(var(--print-h) * var(--ar)), 78vw); /* landscape prints on phones */
   min-width: 150px;
 }
 

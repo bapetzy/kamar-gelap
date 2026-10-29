@@ -53,7 +53,7 @@ function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }, 
       if (!live) return;
       const speed = Math.abs(progress.value - lastP) / Math.max(dt, 1e-3);
       lastP = progress.value;
-      if (speed > 0.02) sim.drop(0.02, Math.random(), 0.12, Math.min(speed * ROCK_GAIN, 0.6) * 0.05);
+      if (speed > 0.02) sim.drop(0.02, Math.random(), 0.12, Math.min(speed * ROCK_GAIN, 0.4));
       sim.step(renderer);
     }),
   );
@@ -65,7 +65,7 @@ function mountPaper(stage: Stage, el: HTMLElement, progress: { value: number }, 
     const dt = Math.max(e.timeStamp - last.t, 1);
     last = { x: e.clientX, y: e.clientY, t: e.timeStamp };
     if (dist < 2) return;
-    const strength = Math.min(0.015 + (dist / dt) * 0.02, 0.08);
+    const strength = Math.min(0.12 + (dist / dt) * 0.18, 0.55);
     sim.drop((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height, 0.035, strength);
   };
   el.addEventListener('pointermove', onMove);

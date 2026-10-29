@@ -35,7 +35,7 @@ Six photographs from Unsplash, used under the [Unsplash License](https://unsplas
 | 01 | 17:40 | Langit Menghitam | David Kristianto |
 | 02 | 18:15 | Hujan di Kaca | Muslim Atsary |
 | 03 | 18:50 | Jas Hujan | shot ed |
-| 04 | 19:30 | Bajaj | Angga Pratama |
+| 04 | 19:30 | Roda Tiga | Angga Pratama |
 | 05 | 21:05 | Macet | Fahrul Razi |
 | 06 | 05:10 | Genangan | Johano Arkiang |
 
@@ -115,22 +115,26 @@ Act titles rise out of line masks and copy surfaces line by line, like an image 
 
 ## Performance (measured)
 
-The numbers below were measured before the found-roll update, which added the film strip, the wave simulation and the print bend. They need re-measuring.
+Measured after the found-roll update (film strip, wave simulation, print bend).
 
 Lighthouse 13.6, desktop preset, production build via `vite preview`, three runs:
 
 | Performance | Accessibility | Best practices | SEO | FCP | LCP | TBT | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | 100 | 100 | 100 | 0.2–0.3 s | 0.2–0.3 s | 0–30 ms | 0 |
+| 98–99 | 100 | 100 | 100 | 0.2 s | 0.2 s | 10–20 ms | 0 |
 
-Frame rate on the target laptop (Ryzen 7 5825U, integrated Radeon, D3D11 via ANGLE), production build, scripted continuous scroll through all acts:
+Frame rate on the target laptop (Ryzen 7 5825U, integrated Radeon, D3D11 via ANGLE), production build, scripted continuous scroll through all acts while stirring the tray:
 
 | Viewport | Canvas pixels | I | II | III | IV | V |
 | --- | --- | --- | --- | --- | --- | --- |
-| 786×630 @1.25 | 983×788 | 60 | 60 | 60 | 60 | 60 |
-| 1920×1080 @1.25 | 2400×1350 | 60 | 59 (4 frames > 20 ms) | 60 | 60 | 60 |
+| 1920×1080 @1.25 | 2400×1350 | 60 | 58 (2 frames > 20 ms) | 60 | 60 | 60 |
 
-CLS is 0 because the content stays unrendered under the preloader cover until the fonts are in, so the font swap can't shift anything visible.
+What keeps it there:
+- CLS is 0 because the content stays unrendered under the preloader cover until the fonts are in, so the font swap can't shift anything visible.
+- Photos decode off the main thread (`ImageBitmapLoader`).
+- Shaders compile with `compileAsync` while the preloader cover is still down (capped at 1.2s).
+- Together these took the longest boot task from about 300 ms to about 80 ms.
+- The wave simulation runs only while the tray is on screen.
 
 Known costs:
 - The JS bundle is about 200 KB gzip, mostly three.js (`WebGLRenderer` pulls in most of its core). This triggers Vite's 500 KB chunk warning.

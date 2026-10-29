@@ -8,7 +8,7 @@ const rows = [...src.matchAll(/title: '([^']+)',\s*time: '([^']+)',\s*line: '([^
 if (rows.length !== 6) throw new Error('expected 6 rows, got ' + rows.length);
 const ar = (r) => `--ar: ${r.w} / ${r.h}`;
 const img = (r, extra = '') => `<img src="/frames/${r.no}.webp" alt="${r.alt}" width="${r.w}" height="${r.h}"${extra} decoding="async" data-frame="${+r.no}" />`;
-const strip = rows.map((r) => `            <li class="print" style="${ar(r)}"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame">${img(r, ' loading="lazy"')}</div><figcaption class="label"><span>Frame ${r.no} · ${r.time}</span> <span>${r.ap} · ${r.s}s</span> <span class="print__title">${r.title}</span></figcaption></figure></li>`).join('\n');
+const strip = rows.map((r) => `            <li class="print" style="${ar(r)}"><figure tabindex="0"><span class="print__clip" aria-hidden="true"></span><div class="frame">${img(r, ' loading="lazy"')}</div><figcaption class="label"><span>Frame ${r.no} · ${r.time} · ${r.ap} · ${r.s}s</span> <span class="print__title">${r.title}</span></figcaption></figure></li>`).join('\n');
 const archive = rows.map((r) => `          <li><button class="archive__item" type="button" aria-haspopup="dialog" data-frame="${+r.no}"><span class="frame" style="${ar(r)}">${img(r, ' loading="lazy"')}</span><span class="label">${r.no} · ${r.time} — ${r.title}</span></button></li>`).join('\n');
 const film = rows.map((r) => `            <img src="/frames/${r.no}.webp" alt="" width="${r.w}" height="${r.h}" decoding="async" />`).join('\n');
 const credits = rows.map((r) => r.credit).join(', ');
